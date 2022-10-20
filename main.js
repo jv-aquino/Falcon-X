@@ -1,0 +1,1 @@
+document.querySelector(".rocket"),document.querySelector(".asteroid"),window.addEventListener("keyboard");
