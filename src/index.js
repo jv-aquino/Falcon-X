@@ -52,7 +52,7 @@ const Dom = (() => {
     rocket.style.top = Info.getRocket("y") + "%";
   }
   
-  window.addEventListener("keydown", (e) => {Controller.checkKey(e.key)});
+  window.addEventListener("keyup", (e) => {Controller.checkKey(e.key)});
 
   return {moveRocket};
 })();
