@@ -547,16 +547,6 @@ video {
   background-color: rgb(244 244 245 / var(--tw-bg-opacity));
 }
 
-.bg-red-600 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(220 38 38 / var(--tw-bg-opacity));
-}
-
-.bg-blue-600 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(37 99 235 / var(--tw-bg-opacity));
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -592,20 +582,26 @@ body {
 }
 
 .asteroid {
-  height: 30px;
-  width: 30px;
+  height: 53px;
+  width: 70px;
   position: absolute;
   left: 50%;
-  animation: fall 2s infinite linear;
+  background-image: url(./img/asteroid.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  animation: fall 2s linear;
 }
 
 .rocket {
-  height: 60px;
-  width: 30px;
+  width: 64px;
+  height: 138px;
   transition: .8s;
   position: absolute;
-  top: 50%;
+  bottom: 50%;
   left: 50%;
+  background-image: url(./img/rocket.png);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 @keyframes fall {
