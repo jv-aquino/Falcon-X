@@ -589,7 +589,8 @@ body {
   background-image: url(./img/asteroid.png);
   background-size: cover;
   background-repeat: no-repeat;
-  animation: fall 2s linear;
+  animation: fall linear;
+  animation-duration: 2s;
 }
 
 .rocket {

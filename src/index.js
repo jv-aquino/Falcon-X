@@ -1,16 +1,24 @@
-const Asteroid = () => {
-  let y = 100;
+import * as Asset from "./assets.js";
+
+const Asteroid = (lifespan, index) => {
   let x = Math.floor((Math.random() * 60) + 20);
+  let y = 100;
+
+  let ui = Asset.createAsteroid(x, y, lifespan);
 
   const getLocation = () => {
     
   };
 
-  const createUI = () => {
-    
-  };
+  const getIndex = () => index;
+  const getUI = () => ui;
 
-  return {getLocation};
+  const createUI = () => {
+    Dom.appendElement(ui);
+  };
+  createUI();
+
+  return {getLocation, getIndex, getUI};
 }
 
 const Info = (() =>  {
@@ -25,7 +33,15 @@ const Info = (() =>  {
 
   const getAsteroids = () => asteroids;
 
-  return {getRocket, setRocket, getAsteroids};
+  const addAsteroid = (asteroid) => asteroids.push(asteroid);
+  const removeAsteroid = (index, delay) => {
+    setTimeout(() => {
+      Dom.removeElement(asteroids[index].getUI());
+      asteroids.splice(index, 1);
+    }, delay - 50);
+  };
+
+  return {getRocket, setRocket, getAsteroids, addAsteroid, removeAsteroid};
 })();
 
 const Controller = (() => {
@@ -56,11 +72,27 @@ const Controller = (() => {
     });
   }
 
-  return {checkMove, checkCrash};
+  const createAsteroid = () => {
+    let lifespan = 2;
+    let index = Info.getAsteroids().length;
+    Info.addAsteroid(Asteroid(lifespan));
+    Info.removeAsteroid(index, lifespan * 1000)
+  }
+
+  return {checkMove, checkCrash, createAsteroid};
 })()
 
 const Dom = (() => {
+  const main = document.querySelector("#container");
   const rocket = document.querySelector(".rocket");
+
+  const appendElement = (element) => {
+    main.appendChild(element);
+  };
+
+  const removeElement = (element) => {
+    main.removeChild(element);
+  }
 
   const moveRocket = () => {
     rocket.style.left = Info.getRocket("x") + "%";
@@ -69,9 +101,9 @@ const Dom = (() => {
   
   window.addEventListener("keyup", (e) => {Controller.checkMove(e.key)});
 
-  return {moveRocket};
+  return {moveRocket, appendElement, removeElement};
 })();
 
 const Start = (() => {
-  setInterval(Dom.checkCrash(), 20);
+  setTimeout(() => {Controller.createAsteroid();}, 2000);
 })();
