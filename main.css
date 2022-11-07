@@ -542,15 +542,16 @@ video {
   border-radius: 9999px;
 }
 
-.bg-zinc-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(244 244 245 / var(--tw-bg-opacity));
+.text-zinc-100 {
+  --tw-text-opacity: 1;
+  color: rgb(244 244 245 / var(--tw-text-opacity));
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Gemunu Libre', sans-serif;
 }
 
 body {
@@ -603,6 +604,14 @@ body {
   background-image: url(./img/rocket.png);
   background-size: cover;
   background-repeat: no-repeat;
+}
+
+.score {
+  position: absolute;
+  right: 0%;
+  padding: 8px 14px;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 @keyframes fall {
