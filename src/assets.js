@@ -9,4 +9,21 @@ const createAsteroid = (x, y, lifespan) => {
   return asteroid;
 }
 
-export {createAsteroid};
+const createRocket = () => {
+  const rocket = document.createElement("div");
+  rocket.classList.add("rocket");
+
+  asteroid.style.left = 50;
+  asteroid.style.bottom = 50;
+
+  return rocket;
+}
+
+const createHeart = () => {
+  const heart = document.createElement("div");
+  heart.classList.add("heart");
+
+  return heart;
+}
+
+export {createAsteroid, createRocket, createHeart};

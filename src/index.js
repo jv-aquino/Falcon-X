@@ -23,6 +23,7 @@ const Asteroid = (lifespan, index) => {
 
 const Info = (() =>  {
   let gameStatus = true;
+  let lives = 0;
 
   let time = 0;
 
@@ -50,15 +51,24 @@ const Info = (() =>  {
   const getTime = () => time;
   const addTime = () => time++;
 
+  const getLives = () => lives;
+  const updateLives = (n) => lives = lives + n;
+
   return {
     getRocket, setRocket, 
     removeAsteroid, addAsteroid, getAsteroids,
     getTime, addTime, 
+    getLives, updateLives,
     gameOn
   };
 })();
 
 const Controller = (() => {
+  const changeLives = (n) => {
+    Info.updateLives(n);
+    Dom.updateHearts();
+  }
+
   const checkMove = (key) => {
     if (!Info.gameOn()) {return}
     if (key == "ArrowLeft" || key == "a") {
@@ -101,13 +111,17 @@ const Controller = (() => {
     Info.removeAsteroid(index, lifespan * 1000)
   }
 
-  return {checkMove, checkCrash, createAsteroid, startTimer};
+  return {checkMove, checkCrash, 
+    createAsteroid, 
+    changeLives,
+    startTimer};
 })()
 
 const Dom = (() => {
   const main = document.querySelector("#container");
   const score = document.querySelector("#score");
   const rocket = document.querySelector(".rocket");
+  const hearts = document.querySelector(".hearts")
 
   const appendElement = (element) => {
     main.appendChild(element);
@@ -125,12 +139,34 @@ const Dom = (() => {
     rocket.style.left = Info.getRocket("x") + "%";
     rocket.style.bottom = Info.getRocket("y") + "%";
   }
+
+  const updateHearts = () => {
+    let newHearts = Info.getLives();
+    let actualHearts = hearts.childElementCount;
+    let difference = newHearts - actualHearts;
+
+    if (difference < 0) {
+      while (difference != 0) {
+        hearts.removeChild(hearts.lastChild);
+        difference++;
+      }
+    }
+    else {
+      while (difference != 0) {
+        hearts.appendChild(Asset.createHeart());
+        difference--;
+      }
+    }
+  }
   
   window.addEventListener("keyup", (e) => {Controller.checkMove(e.key)});
 
-  return {moveRocket, appendElement, removeElement, updateScore};
+  return {moveRocket, 
+    appendElement, removeElement, 
+    updateScore, updateHearts};
 })();
 
 const Settings = (() => {
+  Controller.changeLives(3);
   Controller.startTimer();
 })();
