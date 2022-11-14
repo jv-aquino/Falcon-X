@@ -64,6 +64,21 @@ const Info = (() =>  {
 })();
 
 const Controller = (() => {
+  const startTimer = () => {
+    setInterval(() => {
+      Info.addTime();
+      Dom.updateScore();
+    }, 1000);
+  }
+
+  const startGame = () => {
+    startTimer();
+    changeLives(3);
+    createRocket();
+    Dom.startRocket();
+    Dom.start();
+  }
+
   const changeLives = (n) => {
     Info.updateLives(n);
     Dom.updateHearts();
@@ -81,11 +96,11 @@ const Controller = (() => {
     }
 
     else if (key == "ArrowUp" || key == "w") {
-      if (Info.getRocket("y") == 70) {return}
+      if (Info.getRocket("y") == 75) {return}
       Info.setRocket("y", Info.getRocket("y") + 5);
     }
     else if (key == "ArrowDown" || key == "s") {
-      if (Info.getRocket("y") == 20) {return}
+      if (Info.getRocket("y") == 25) {return}
       Info.setRocket("y", Info.getRocket("y") - 5);
     }
     Dom.moveRocket();
@@ -97,31 +112,32 @@ const Controller = (() => {
     });
   }
 
-  const startTimer = () => {
-    setInterval(() => {
-      Info.addTime();
-      Dom.updateScore();
-    }, 1000);
-  }
-
   const createAsteroid = () => {
-    let lifespan = 2;
+    let lifespan = 3 - Math.log10(Info.getTime()) * 1.2;
     let index = Info.getAsteroids().length;
     Info.addAsteroid(Asteroid(lifespan));
     Info.removeAsteroid(index, lifespan * 1000)
   }
 
+  const createRocket = () => {
+    Dom.appendElement(Asset.createRocket(50, 50));
+  }
+
   return {checkMove, checkCrash, 
-    createAsteroid, 
+    createAsteroid, createRocket,
     changeLives,
-    startTimer};
+    startGame};
 })()
 
 const Dom = (() => {
   const main = document.querySelector("#container");
   const score = document.querySelector("#score");
-  const rocket = document.querySelector(".rocket");
-  const hearts = document.querySelector(".hearts")
+  const hearts = document.querySelector(".hearts");
+  let rocket;
+
+  const startRocket = () => {
+    rocket = document.querySelector(".rocket");
+  }
 
   const appendElement = (element) => {
     main.appendChild(element);
@@ -137,7 +153,7 @@ const Dom = (() => {
 
   const moveRocket = () => {
     rocket.style.left = Info.getRocket("x") + "%";
-    rocket.style.bottom = Info.getRocket("y") + "%";
+    rocket.style.bottom = "calc(" + Info.getRocket("y") + "% - 69px)";
   }
 
   const updateHearts = () => {
@@ -159,14 +175,31 @@ const Dom = (() => {
     }
   }
   
-  window.addEventListener("keyup", (e) => {Controller.checkMove(e.key)});
+  const start = () => {
+    main.removeChild(document.querySelector(".start"));
+    window.addEventListener("keyup", (e) => {Controller.checkMove(e.key)});
+    main.style.animation = "moveSky 15s linear infinite";
+  }
+
+  const stop = () => {
+    window.removeEventListener("keyup", (e) => {Controller.checkMove(e.key)});
+    main.style.animation = "";
+  }
 
   return {moveRocket, 
     appendElement, removeElement, 
-    updateScore, updateHearts};
+    updateScore, updateHearts,
+    startRocket,
+    start, stop};
 })();
 
-const Settings = (() => {
-  Controller.changeLives(3);
-  Controller.startTimer();
+const Menu = (() => {
+  let startButton =  document.querySelector("button#start");
+
+  const start = () => {
+    Controller.startGame();
+    startButton.removeEventListener("click", start);
+  }
+
+  startButton.addEventListener("click", start)
 })();
