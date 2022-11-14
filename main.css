@@ -567,7 +567,6 @@ body {
   max-width: 100vw;
   background-image: url(./img/sky.png);
   background-size: contain;
-  animation: moveSky 15s linear infinite;
 }
 
 @keyframes moveSky {
@@ -593,7 +592,6 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
   animation: fall linear;
-  animation-duration: 2s;
 }
 
 .rocket {
@@ -631,11 +629,49 @@ div.hearts {
   background-size: cover;
 }
 
+.powerUp {
+  width: 50px;
+  height: 50px;
+  animation: fall linear;
+  position: absolute;
+}
+
+.start, 
 .gameOver {
   width: 100vw;
   height: 100vh;
   position: absolute;
-  z-index: 10;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.start .text {
+  width: 55vw;
+  height: 20vh;
+}
+
+.gameOver .text {
+  width: 50vw;
+  height: 50vh;
+}
+
+.buttonDiv {
+  display: flex;
+  align-items: center;
+  height: -moz-fit-content;
+  height: fit-content;
+}
+
+button {
+  width: 100px;
+  height: 100px;
+  background-image: url(./img/playButton.png);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 @keyframes fall {
