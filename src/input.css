@@ -54,7 +54,7 @@ body {
 }
 
 .rocket {
-  width: 64px;
+  width: 65px;
   height: 138px;
 
   transition: .8s;
@@ -75,6 +75,7 @@ body {
   font-size: 2rem;
 
   font-weight: 600;
+  opacity: 0;
 }
 
 div.hearts {
@@ -106,6 +107,7 @@ div.hearts {
 .gameOver {
   width: 100vw;
   height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
 
   position: absolute;
 
@@ -149,5 +151,22 @@ button {
   }
   100% {
     top: 100%;
+  }
+}
+
+/* Power Ups */
+.shield {
+  animation: shield 8s linear infinite;
+}
+
+@keyframes shield {
+  10% {
+    filter: sepia(80%) hue-rotate(190deg) saturate(500%) grayscale(0.6);
+  }
+  90% {
+    filter: sepia(80%) hue-rotate(190deg) saturate(200%) grayscale(0.3);
+  }
+  100% {
+    filter: none;
   }
 }

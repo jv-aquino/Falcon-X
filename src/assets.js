@@ -37,4 +37,13 @@ const createPowerUp = (type, lifespan) => {
   powerUp.style.backgroundImage = `./img/${type}PowerUp.png`;
 }
 
-export {createAsteroid, createRocket, createHeart, createPowerUp};
+const createAudio = () => {
+  const audio = document.createElement("audio");
+  audio.classList.add("audio");
+  audio.innerHTML = '<audio autoplay loop><source src="./music.mp3" type="audio/mpeg"></audio>';
+  audio.play();
+
+  return audio;
+}
+
+export {createAsteroid, createRocket, createHeart, createPowerUp, createAudio};
