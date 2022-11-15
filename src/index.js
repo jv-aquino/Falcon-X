@@ -1,21 +1,21 @@
 import * as Asset from "./assets.js";
 
-const Object = (type, lifespan, index) => {
+const Object = (type, lifespan) => {
   let x = Math.floor((Math.random() * 60) + 20);
   let y = 100;
+  let ui;
 
-  if (type == "Asteroid") {
-    Asset.createAsteroid(x, y, lifespan);
+  if (type == "asteroid") {
+    ui = Asset.createAsteroid(x, y, lifespan);
   }
-  else if (type == "PowerUp") {
-    Asset.createPowerUp(x, y, lifespan);
+  else if (type == "powerUp") {
+    ui = Asset.createPowerUp(x, y, lifespan);
   }
 
   const getLocation = (axis) => {
     return (axis == 'x') ? ui.left : ui.bottom;
   };
 
-  const getIndex = () => index;
   const getUI = () => ui;
 
   const createUI = () => {
@@ -23,7 +23,7 @@ const Object = (type, lifespan, index) => {
   };
   createUI();
 
-  return {getLocation, getIndex, getUI};
+  return {getLocation, getUI};
 }
 
 const Info = (() =>  {
@@ -45,27 +45,28 @@ const Info = (() =>  {
 
   const hasShield = () => Rocket.shield;
   const removeShield = () => Rocket.shield = false;
-  const addShield = () => {
+  const addShield = (time) => {
     Rocket.shield = true;
-    Dom.addShield();
+    Dom.addShield(time);
   }
 
   const getAsteroids = () => asteroids;
 
   const addAsteroid = (asteroid) => asteroids.push(asteroid);
-  const removeAsteroid = (index, delay) => {
+  const removeAsteroid = (delay) => {
     setTimeout(() => {
-      Dom.removeElement(asteroids[index].getUI());
-      asteroids.splice(index, 1);
-    }, delay - 50);
+      Dom.removeElement(asteroids.shift().getUI());
+    }, delay);
   };
+
+  const getPowerUps = () => powerUps;
 
   const addPowerUp = (powerUp) => powerUps.push(powerUp);
   const removePowerUp = (index, delay) => {
     setTimeout(() => {
       Dom.removeElement(powerUps[index].getUI());
       powerUps.splice(index, 1);
-    }, delay - 50);
+    }, delay);
   }
 
   const gameOn = () => gameStatus;
@@ -80,6 +81,7 @@ const Info = (() =>  {
     getRocket, setRocket, 
     hasShield, addShield, removeShield,
     removeAsteroid, addAsteroid, getAsteroids,
+    removePowerUp, addPowerUp, getPowerUps,
     getTime, addTime, 
     getLives, updateLives,
     gameOn
@@ -100,6 +102,17 @@ const Controller = (() => {
     createRocket();
     Dom.startRocket();
     Dom.start();
+    
+    let asteroids = () => {
+      if (!Info.gameOn()) {return}
+      createObject("asteroid");
+      setTimeout(asteroids, 2000 - Math.min(Info.getTime() * 50, 1600))
+    }
+    asteroids();
+
+    setInterval(() => {
+      checkCrash();
+    }, 70);
   }
 
   const changeLives = (n) => {
@@ -131,16 +144,34 @@ const Controller = (() => {
   
   const checkCrash = () => {
     if (Info.hasShield()) {return}
+    let a = Dom.getActualRocket();
+    let ax = a.left;
+    let ay = a.top;
+
     Info.getAsteroids().forEach(asteroid => {
-      
+      let b = asteroid.getUI().getBoundingClientRect()
+      let bx = b.left;
+      let by = b.top;
+
+      if (!(((ay + a.height) < (by)) ||
+        (ay > (by + b.height)) ||
+        ((ax + a.width) < bx) ||
+        (ax > (bx + b.width)))) {
+          console.log("Collision");
+      }
     });
   }
 
   const createObject = (type) => {
     let lifespan = 3 - Math.log10(Math.abs(Info.getTime() * 0.75 - 6));
-    let index = Info.getAsteroids().length;
-    Info.addAsteroid(Object(type, lifespan));
-    Info.removeAsteroid(index, lifespan * 1000)
+    if (type == "asteroid") {
+      Info.addAsteroid(Object(type, lifespan));
+      Info.removeAsteroid(lifespan * 1000);
+    }
+    else if (type == 'powerUp') {
+      Info.addPowerUp(Object(type, lifespan));
+      Info.removePowerUp(lifespan * 1000);
+    }
   }
 
   const createRocket = () => {
@@ -163,6 +194,8 @@ const Dom = (() => {
   const startRocket = () => {
     rocket = document.querySelector(".rocket");
   }
+
+  const getActualRocket = () => rocket.getBoundingClientRect();
 
   const appendElement = (element) => {
     main.appendChild(element);
@@ -200,13 +233,13 @@ const Dom = (() => {
     }
   }
 
-  const addShield = () => {
+  const addShield = (time) => {
     rocket.classList.add("shield");
 
     setTimeout(() => {
       rocket.classList.remove("shield");
       Info.removeShield();
-    }, 8000)
+    }, time)
   }
   
   const start = () => {
@@ -224,7 +257,7 @@ const Dom = (() => {
     main.removeChild(document.querySelector(".audio"));
   }
 
-  return {moveRocket, 
+  return {moveRocket, getActualRocket,
     appendElement, removeElement, 
     updateScore, updateHearts,
     startRocket, addShield,
