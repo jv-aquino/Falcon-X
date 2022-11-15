@@ -538,10 +538,6 @@ video {
   }
 }
 
-.rounded-full {
-  border-radius: 9999px;
-}
-
 .text-zinc-100 {
   --tw-text-opacity: 1;
   color: rgb(244 244 245 / var(--tw-text-opacity));
@@ -641,7 +637,7 @@ div.hearts {
 .gameOver {
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  background: linear-gradient(60deg, rgba(0, 0, 0, 0.8), rgba(4, 31, 4, 0.8), rgba(4, 31, 4, 0.8), rgba(0, 0, 0, 0.8));
   position: absolute;
   z-index: 2;
   display: flex;
@@ -671,6 +667,7 @@ div.hearts {
 button {
   width: 100px;
   height: 100px;
+  filter: drop-shadow(1px 1px 10px rgb(17, 170, 17));
   background-image: url(./img/playButton.png);
   background-repeat: no-repeat;
   background-size: cover;
