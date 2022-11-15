@@ -179,7 +179,7 @@ const Controller = (() => {
         (ax > (bx + b.width)))) {
           changeLives(-1);
           if (Info.getLives() == 0) {
-            stopGame();
+            Menu.stop();
             return
           }
           Info.addShield(4);
@@ -271,8 +271,14 @@ const Dom = (() => {
   }
   
   const start = () => {
+    try {
+      main.removeChild(document.querySelector(".start"));
+    } catch {}
+    try {
+      main.removeChild(document.querySelector(".gameOver"));
+    } catch {}
+
     main.style.animation = "moveSky 14s linear infinite";
-    main.removeChild(document.querySelector(".start"));
     window.addEventListener("keyup", (e) => {Controller.checkMove(e.key)});
     scoreDiv.style.opacity = 1;
 
@@ -290,6 +296,8 @@ const Dom = (() => {
     scoreDiv.style.opacity = 0;
     main.style.animation = "";
     main.removeChild(document.querySelector(".audio"));
+
+    main.appendChild(Asset.createGameOver());
   }
 
   return {moveRocket, getActualRocket,
@@ -307,7 +315,15 @@ const Menu = (() => {
     startButton.removeEventListener("click", start);
   }
 
+  const stop = () => {
+    Controller.stopGame();
+    startButton =  document.querySelector("button#start");
+    startButton.addEventListener("click", () => {start()});
+  }
+
   startButton.addEventListener("click", start);
+
+  return {start, stop}
 })();
 
 const Settings = (() => {

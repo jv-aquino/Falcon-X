@@ -45,4 +45,13 @@ const createAudio = () => {
   return audio;
 }
 
-export {createAsteroid, createRocket, createHeart, createPowerUp, createAudio};
+const createGameOver = () => {
+  const div = document.createElement("div");
+  div.classList.add("gameOver");
+  div.innerHTML = '<div><img src="./img/gameOver.png" class="text"></div>';
+  div.innerHTML += '<div class="buttonDiv"><button id="start"></button></div>';
+
+  return div;
+}
+
+export {createAsteroid, createRocket, createHeart, createPowerUp, createAudio, createGameOver};

@@ -8,6 +8,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  outline: none;
 
   font-family: 'Gemunu Libre', sans-serif;
 }
@@ -127,8 +128,8 @@ div.hearts {
   height: 20vh;
 }
 .gameOver .text {
-  width: 50vw;
-  height: 50vh;
+  width: 30vw;
+  height: 40vh;
 }
 
 .buttonDiv {
