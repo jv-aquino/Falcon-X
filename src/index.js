@@ -36,7 +36,7 @@ const Info = (() =>  {
   const powerUps = [];
   const Rocket = {
     x: 50,
-    y: 50,
+    y: 45,
     shield: false
   };
   
@@ -82,18 +82,36 @@ const Info = (() =>  {
     hasShield, addShield, removeShield,
     removeAsteroid, addAsteroid, getAsteroids,
     removePowerUp, addPowerUp, getPowerUps,
-    getTime, addTime, 
+    getTime, addTime, time,
     getLives, updateLives,
-    gameOn
+    gameOn, gameStatus
   };
 })();
 
 const Controller = (() => {
+  let timerInterval;
+  let crashInterval;
+  let asteroidInterval;
+  
   const startTimer = () => {
-    setInterval(() => {
+    timerInterval = setInterval(() => {
       Info.addTime();
       Dom.updateScore();
     }, 1000);
+  }
+
+  const stopGame = () => {
+    Info.time = 0;
+    clearInterval(timerInterval);
+
+    Info.setRocket("x", 50);
+    Info.setRocket("y", 45);
+
+    clearInterval(crashInterval);
+    clearTimeout(asteroidInterval);
+
+    Dom.stop();
+    Info.gameStatus = false;
   }
 
   const startGame = () => {
@@ -104,16 +122,18 @@ const Controller = (() => {
     Dom.start();
     
     let asteroids = () => {
-      if (!Info.gameOn()) {return}
+      if (Info.gameOn() == false) {return}
+
       createObject("asteroid");
-      setTimeout(asteroids, 2000 - Math.min(Info.getTime() * 50, 1600))
+      asteroidInterval = setTimeout(asteroids, 2000 - Math.min(Info.getTime() * 50, 1550))
     }
     asteroids();
 
-    setInterval(() => {
+    crashInterval = setInterval(() => {
       checkCrash();
     }, 70);
   }
+
 
   const changeLives = (n) => {
     Info.updateLives(n);
@@ -123,21 +143,21 @@ const Controller = (() => {
   const checkMove = (key) => {
     if (!Info.gameOn()) {return}
     if (key == "ArrowLeft" || key == "a") {
-      if (Info.getRocket("x") == 15) {return}
-      Info.setRocket("x", Info.getRocket("x") - 5);
+      if (Info.getRocket("x") <= 15) {return}
+      Info.setRocket("x", Info.getRocket("x") - 7);
     }
     else if (key == "ArrowRight" || key == "d") {
-      if (Info.getRocket("x") == 85) {return}
-      Info.setRocket("x", Info.getRocket("x") + 5);
+      if (Info.getRocket("x") >= 85) {return}
+      Info.setRocket("x", Info.getRocket("x") + 7);
     }
 
     else if (key == "ArrowUp" || key == "w") {
-      if (Info.getRocket("y") == 80) {return}
-      Info.setRocket("y", Info.getRocket("y") + 5);
+      if (Info.getRocket("y") >= 80) {return}
+      Info.setRocket("y", Info.getRocket("y") + 7);
     }
     else if (key == "ArrowDown" || key == "s") {
-      if (Info.getRocket("y") == 20) {return}
-      Info.setRocket("y", Info.getRocket("y") - 5);
+      if (Info.getRocket("y") <= 20) {return}
+      Info.setRocket("y", Info.getRocket("y") - 7);
     }
     Dom.moveRocket();
   };
@@ -157,7 +177,12 @@ const Controller = (() => {
         (ay > (by + b.height)) ||
         ((ax + a.width) < bx) ||
         (ax > (bx + b.width)))) {
-          console.log("Collision");
+          changeLives(-1);
+          if (Info.getLives() == 0) {
+            stopGame();
+            return
+          }
+          Info.addShield(4);
       }
     });
   }
@@ -175,13 +200,13 @@ const Controller = (() => {
   }
 
   const createRocket = () => {
-    Dom.appendElement(Asset.createRocket(50, 50));
+    Dom.appendElement(Asset.createRocket(50, 45));
   }
 
   return {checkMove, checkCrash, 
     createObject, createRocket,
     changeLives,
-    startGame};
+    startGame, stopGame};
 })()
 
 const Dom = (() => {
@@ -220,6 +245,8 @@ const Dom = (() => {
     let difference = newHearts - actualHearts;
 
     if (difference < 0) {
+      if (actualHearts == 0) {return}
+
       while (difference != 0) {
         hearts.removeChild(hearts.lastChild);
         difference++;
@@ -235,23 +262,31 @@ const Dom = (() => {
 
   const addShield = (time) => {
     rocket.classList.add("shield");
+    rocket.style.animationDuration = time + "s";
 
     setTimeout(() => {
       rocket.classList.remove("shield");
       Info.removeShield();
-    }, time)
+    }, time * 1000)
   }
   
   const start = () => {
-    main.appendChild(Asset.createAudio());
+    main.style.animation = "moveSky 14s linear infinite";
     main.removeChild(document.querySelector(".start"));
     window.addEventListener("keyup", (e) => {Controller.checkMove(e.key)});
     scoreDiv.style.opacity = 1;
-    main.style.animation = "moveSky 14s linear infinite";
+
+    if (document.querySelector(".audio") == null) {
+      main.appendChild(Asset.createAudio());
+    }
+    else {
+      document.querySelector(".audio").play();
+    }
   }
 
   const stop = () => {
     window.removeEventListener("keyup", (e) => {Controller.checkMove(e.key)});
+    main.removeChild(rocket);
     scoreDiv.style.opacity = 0;
     main.style.animation = "";
     main.removeChild(document.querySelector(".audio"));

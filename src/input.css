@@ -40,7 +40,7 @@ body {
 }
 
 .asteroid {
-  height: 53px;
+  height: 54px;
   width: 70px;
   
   position: absolute;
@@ -54,15 +54,16 @@ body {
 }
 
 .rocket {
-  width: 65px;
-  height: 138px;
+  width: 54px;
+  height: 136px;
 
-  transition: .8s;
+  transition: .7s linear;
   position: absolute;
-  bottom: 50%;
+  bottom: 45%;
   left: 50%;
 
   background-image: url(./img/rocket.png);
+  background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -162,10 +163,10 @@ button {
 }
 
 @keyframes shield {
-  10% {
+  20% {
     filter: sepia(80%) hue-rotate(190deg) saturate(500%) grayscale(0.6);
   }
-  90% {
+  80% {
     filter: sepia(80%) hue-rotate(190deg) saturate(200%) grayscale(0.3);
   }
   100% {

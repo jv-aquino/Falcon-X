@@ -41,7 +41,6 @@ const createAudio = () => {
   const audio = document.createElement("audio");
   audio.classList.add("audio");
   audio.innerHTML = '<audio autoplay loop><source src="./music.mp3" type="audio/mpeg"></audio>';
-  audio.play();
 
   return audio;
 }
