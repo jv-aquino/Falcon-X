@@ -26,64 +26,86 @@ const Object = (type, lifespan, powerUpName) => {
   return {getLocation, getUI, powerUpName};
 }
 
-const Info = (() =>  {
+const Info = (() => {
   let gameStatus = true;
   let lives = 0;
-
+  
   let time = 0;
-
+  
   const asteroids = [];
   const powerUps = [];
   const Rocket = {
     x: 50,
     y: 45,
-    shield: false
+    shield: false,
   };
   
   const getRocket = (axis) => Rocket[axis];
-  const setRocket = (axis, value) => Rocket[axis] = value;
-
+  const setRocket = (axis, value) => (Rocket[axis] = value);
+  
   const hasShield = () => Rocket.shield;
-  const removeShield = () => Rocket.shield = false;
+  const removeShield = () => (Rocket.shield = false);
   const addShield = (time) => {
     Rocket.shield = true;
     Dom.addShield(time);
-  }
-
+  };
+  
   const getAsteroids = () => asteroids;
-
+  
   const addAsteroid = (asteroid) => asteroids.push(asteroid);
   const removeAsteroid = (delay) => {
     setTimeout(() => {
       Dom.removeElement(asteroids.shift().getUI());
     }, delay);
   };
-
+  
   const getPowerUps = () => powerUps;
-
+  
   const addPowerUp = (powerUp) => powerUps.push(powerUp);
   const removePowerUp = (delay) => {
     setTimeout(() => {
       Dom.removeElement(powerUps.shift().getUI());
     }, delay);
-  }
-
+  };
+  
   const gameOn = () => gameStatus;
-
+  
   const getTime = () => time;
+  const resetTime = () => time = 0;
   const addTime = () => time++;
-
+  
   const getLives = () => lives;
-  const updateLives = (n) => lives = lives + n;
-
+  const updateLives = (n) => (lives = lives + n);
+  
+  let record = 0;
+  try {
+    if (localStorage.getItem('record') != null) {
+      record = localStorage.getItem('record');
+    }
+  } catch (e) {}
+  
+  const getRecord = () => record;
+  const verifyAndSetRecord = (value) => {
+    let r = false;
+    if (value > record) {
+      r = true
+    }
+    record = (value > record) ? value : record;
+    try {
+      localStorage.setItem('record', record);
+    } catch (e) {}
+    return r;
+  }
+  
   return {
-    getRocket, setRocket, 
+    getRocket, setRocket,
     hasShield, addShield, removeShield,
     removeAsteroid, addAsteroid, getAsteroids,
     removePowerUp, addPowerUp, getPowerUps,
-    getTime, addTime, time,
+    getTime, addTime, resetTime,
     getLives, updateLives,
-    gameOn, gameStatus
+    gameOn, gameStatus,
+    getRecord, verifyAndSetRecord,
   };
 })();
 
@@ -100,8 +122,10 @@ const Controller = (() => {
   }
 
   const stopGame = () => {
-    Info.time = 0;
     clearInterval(timerInterval);
+    let newRecord = Info.verifyAndSetRecord(Info.getTime() * 10);
+    
+    Info.resetTime();
 
     Info.setRocket("x", 50);
     Info.setRocket("y", 45);
@@ -109,16 +133,18 @@ const Controller = (() => {
     clearInterval(crashInterval);
     clearTimeout(asteroidInterval);
 
-    Dom.stop();
+    Dom.stop(newRecord);
     Info.gameStatus = false;
   }
 
   const startGame = () => {
-    startTimer();
+    Info.resetTime();
+
     changeLives(3);
     createRocket();
     Dom.startRocket();
     Dom.start();
+    startTimer();
     
     let asteroids = () => {
       if (Info.gameOn() == false) {return}
@@ -234,7 +260,8 @@ const Controller = (() => {
 const Dom = (() => {
   const main = document.querySelector("#container");
   const scoreDiv = document.querySelector(".score");
-  const score = document.querySelector("#score");
+  scoreDiv.innerHTML = `RECORD: <span>${Info.getRecord()}</span>`;
+  let score = document.querySelector("#score");
   const hearts = document.querySelector(".hearts");
   let rocket;
 
@@ -250,10 +277,6 @@ const Dom = (() => {
 
   const removeElement = (element) => {
     main.removeChild(element);
-  }
-
-  const updateScore = () => {
-    score.textContent = Info.getTime() * 10;
   }
 
   const moveRocket = () => {
@@ -300,14 +323,15 @@ const Dom = (() => {
   const start = () => {
     try {
       main.removeChild(document.querySelector(".start"));
-    } catch {}
+    } catch (e) {}
     try {
       main.removeChild(document.querySelector(".gameOver"));
-    } catch {}
+    } catch (e) {}
 
     main.style.animation = "moveSky 14s linear infinite";
     window.addEventListener("keyup", (e) => {Controller.checkMove(e.key)});
-    scoreDiv.style.opacity = 1;
+    scoreDiv.innerHTML = 'SCORE: <span id="score">0</span>';
+    score = document.querySelector("#score");
 
     if (document.querySelector(".audio") == null) {
       main.appendChild(Asset.createAudio());
@@ -317,17 +341,21 @@ const Dom = (() => {
     }
   }
 
-  const stop = () => {
+  const stop = (newRecord) => {
     window.removeEventListener("keyup", (e) => {Controller.checkMove(e.key)});
     main.removeChild(rocket);
-    scoreDiv.style.opacity = 0;
+    scoreDiv.innerHTML = `RECORD: ${newRecord ? "(NEW)" : ""} <span>${Info.getRecord()}</span>`;
     main.style.animation = "";
     main.removeChild(document.querySelector(".audio"));
 
     main.appendChild(Asset.createGameOver());
   }
 
-  return {moveRocket, getActualRocket,
+  const updateScore = () => {
+    score.textContent = Info.getTime() * 10;
+  }
+
+  return {moveRocket, getActualRocket, score,
     appendElement, removeElement, 
     updateScore, updateHearts,
     startRocket, addShield, removeShield,
@@ -340,13 +368,13 @@ const Menu = (() => {
   const start = () => {
     Controller.startGame();
     PowerUps.start();
-    startButton.removeEventListener("click", start);
+    try {startButton.removeEventListener("click", start);} catch (e) {}
   }
 
   const stop = () => {
     Controller.stopGame();
     PowerUps.stop();
-    startButton =  document.querySelector("button#start");
+    startButton = document.querySelector("button#start");
     startButton.addEventListener("click", () => {start()});
   }
 
