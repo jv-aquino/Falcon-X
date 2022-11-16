@@ -97,14 +97,6 @@ div.hearts {
   background-size: cover;
 }
 
-.powerUp {
-  width: 50px;
-  height: 50px;
-
-  animation: fall linear;
-  position: absolute;
-}
-
 .start, 
 .gameOver {
   width: 100vw;
@@ -159,6 +151,25 @@ button {
 }
 
 /* Power Ups */
+.powerUp {
+  width: 50px;
+  height: 50px;
+
+  position: absolute;
+
+  animation: fall linear;
+
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.heartPU {
+  filter: drop-shadow(1px -1px 3px rgb(17, 170, 17));
+}
+.shiedlPU {
+  filter: drop-shadow(1px -1px 2px rgb(17, 82, 180));
+}
+
 .shield {
   animation: shield 8s linear infinite;
 }

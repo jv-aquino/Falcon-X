@@ -1,6 +1,6 @@
 import * as Asset from "./assets.js";
 
-const Object = (type, lifespan) => {
+const Object = (type, lifespan, powerUpName) => {
   let x = Math.floor((Math.random() * 60) + 20);
   let y = 100;
   let ui;
@@ -9,7 +9,7 @@ const Object = (type, lifespan) => {
     ui = Asset.createAsteroid(x, y, lifespan);
   }
   else if (type == "powerUp") {
-    ui = Asset.createPowerUp(x, y, lifespan);
+    ui = Asset.createPowerUp(powerUpName, lifespan, x, y);
   }
 
   const getLocation = (axis) => {
@@ -23,7 +23,7 @@ const Object = (type, lifespan) => {
   };
   createUI();
 
-  return {getLocation, getUI};
+  return {getLocation, getUI, powerUpName};
 }
 
 const Info = (() =>  {
@@ -62,10 +62,9 @@ const Info = (() =>  {
   const getPowerUps = () => powerUps;
 
   const addPowerUp = (powerUp) => powerUps.push(powerUp);
-  const removePowerUp = (index, delay) => {
+  const removePowerUp = (delay) => {
     setTimeout(() => {
-      Dom.removeElement(powerUps[index].getUI());
-      powerUps.splice(index, 1);
+      Dom.removeElement(powerUps.shift().getUI());
     }, delay);
   }
 
@@ -163,10 +162,33 @@ const Controller = (() => {
   };
   
   const checkCrash = () => {
-    if (Info.hasShield()) {return}
     let a = Dom.getActualRocket();
     let ax = a.left;
     let ay = a.top;
+
+    Info.getPowerUps().forEach(powerUp => {
+      let b = powerUp.getUI().getBoundingClientRect()
+      let bx = b.left;
+      let by = b.top;
+
+      if (!(((ay + a.height) < (by)) ||
+        (ay > (by + b.height)) ||
+        ((ax + a.width) < bx) ||
+        (ax > (bx + b.width)))) {
+          if (powerUp.powerUpName == "heart") {
+            changeLives(1);
+          }
+          else if (powerUp.powerUpName == "shield") {
+            Info.removeShield();
+            Dom.removeShield();
+
+            Info.addShield(8);
+          }
+          Dom.removeElement(document.querySelector("." + powerUp.powerUpName + "PU"));
+      }
+    });
+
+    if (Info.hasShield()) {return}
 
     Info.getAsteroids().forEach(asteroid => {
       let b = asteroid.getUI().getBoundingClientRect()
@@ -182,19 +204,19 @@ const Controller = (() => {
             Menu.stop();
             return
           }
-          Info.addShield(4);
+          Info.addShield(3.5);
       }
     });
   }
 
-  const createObject = (type) => {
+  const createObject = (type, powerUpName) => {
     let lifespan = 3 - Math.log10(Math.abs(Info.getTime() * 0.75 - 6));
     if (type == "asteroid") {
       Info.addAsteroid(Object(type, lifespan));
       Info.removeAsteroid(lifespan * 1000);
     }
     else if (type == 'powerUp') {
-      Info.addPowerUp(Object(type, lifespan));
+      Info.addPowerUp(Object(type, lifespan, powerUpName));
       Info.removePowerUp(lifespan * 1000);
     }
   }
@@ -259,15 +281,20 @@ const Dom = (() => {
       }
     }
   }
-
+  let shieldTime;
   const addShield = (time) => {
     rocket.classList.add("shield");
     rocket.style.animationDuration = time + "s";
 
-    setTimeout(() => {
+    shieldTime = setTimeout(() => {
       rocket.classList.remove("shield");
       Info.removeShield();
     }, time * 1000)
+  }
+
+  const removeShield = () => {
+    rocket.classList.remove("shield");
+    clearTimeout(shieldTime);
   }
   
   const start = () => {
@@ -303,7 +330,7 @@ const Dom = (() => {
   return {moveRocket, getActualRocket,
     appendElement, removeElement, 
     updateScore, updateHearts,
-    startRocket, addShield,
+    startRocket, addShield, removeShield,
     start, stop};
 })();
 
@@ -312,11 +339,13 @@ const Menu = (() => {
 
   const start = () => {
     Controller.startGame();
+    PowerUps.start();
     startButton.removeEventListener("click", start);
   }
 
   const stop = () => {
     Controller.stopGame();
+    PowerUps.stop();
     startButton =  document.querySelector("button#start");
     startButton.addEventListener("click", () => {start()});
   }
@@ -326,15 +355,26 @@ const Menu = (() => {
   return {start, stop}
 })();
 
-const Settings = (() => {
-  setTimeout(() => {
-    if (Math.random() < 0.75) {
+const PowerUps = (() => {
+  let heartPU;
+  let shieldPU; 
+  const start = () => {
+    heartPU = setInterval(() => {
+      if (Math.random() < 0.8) {
+      Controller.createObject("powerUp", "heart");
+      }
+    }, 7500);
+    shieldPU = setInterval(() => {
+      if (Math.random() < 0.85) {
+        Controller.createObject("powerUp", "shield");
+      }
+    }, 13000);
+  }
 
-    }
-  }, 6400);
-  setTimeout(() => {
-    if (Math.random() < 0.8) {
-      
-    }
-  }, 14500);
+  const stop = () => {
+    clearInterval(heartPU);
+    clearInterval(shieldPU);
+  }
+
+  return {start, stop}
 })();

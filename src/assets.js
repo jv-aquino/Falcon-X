@@ -26,15 +26,17 @@ const createHeart = () => {
   return heart;
 }
 
-const createPowerUp = (type, lifespan) => {
+const createPowerUp = (type, lifespan, x, y) => {
   const powerUp = document.createElement("div");
-  powerUp.classList.add("powerUp");
+  powerUp.classList.add("powerUp", type + "PU");
 
-  powerUp.style.left = Math.floor((Math.random() * 60) + 20);
-  powerUp.style.bottom = 100;
+  powerUp.style.left = x + "%";
+  powerUp.style.bottom = y + "%";
   powerUp.style.animationDuration = lifespan + "s";
 
-  powerUp.style.backgroundImage = `./img/${type}PowerUp.png`;
+  powerUp.style.backgroundImage = "url(./img/"+ type + "PowerUp.png)";
+
+  return powerUp;
 }
 
 const createAudio = () => {
